@@ -212,7 +212,7 @@ tab1, tab2 = st.tabs(['Names','Years'])
 
 with st.sidebar:
     year_input = st.slider("Year", min_value=1800, max_value=2023, value=2000)
-    input_name = st.text_input('Enter a name:')
+    input_name = st.text_input('Enter a name:', key="name_input_1")
     
 
 
@@ -224,7 +224,7 @@ with tab2:
 
 
 # Prompt the user to enter a name
-input_name = st.text_input('Enter a name:')
+input_name = st.text_input('Enter a name:', key="name_input_2")
 
 # Display the entered name
 if input_name:
