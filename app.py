@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 
+
 def top_names_plot(df, year=2000, n=10, width=800, height=600, variable='count'):
     year_data = df[df['year'] == year].copy()
     year_data['overall_rank'] = year_data[variable].rank(method='min', ascending=False).astype(int)
@@ -206,61 +207,142 @@ def one_hit_wonders(ohw_data, year=1977):
 
 
 
-st.title('This is Pretty Cool')
+# Sidebar
+st.sidebar.title("BYU Life")
+st.sidebar.write("Navigate your BYU journey!")
+st.sidebar.image("https://upload.wikimedia.org/wikipedia/en/thumb/b/b8/BYUlogo.svg/1200px-BYUlogo.svg.png", use_container_width=True)
+st.sidebar.write("Explore credit load, study hour balance, and a small list of things to do!")
 
-tab1, tab2 = st.tabs(['Names','Years'])
+# Tabs
+tab1, tab2, tab3 = st.tabs(["Dashboard", "Study Habits", "Campus Fun"])
 
-with st.sidebar:
-    year_input = st.slider("Year", min_value=1800, max_value=2023, value=2000)
-    input_name = st.text_input('Enter a name:', key="name_input_1")
-    
+# Tab 1: Dashboard Content
+with tab1:
+    st.title("Welcome to BYU Life Tracker")
+    st.write("Track your academic progress, study habits, and involvement on campus!")
 
+    # Input Widgets
+    st.header("Customize Your Tracker")
+    credit_hours = st.number_input("How many credit hours are you taking?", value=15, step=1)
+    study_hours = st.slider("How many hours do you study per week?", min_value=0, max_value=50, value=15)
+    major = st.selectbox("Do you feel overwhelmed with your current schedule?", options=["Yes", "Somewhat", "No"])
+    involvement = st.radio("Have you sought on campus learning assistance?", options=["Yes", "No", "What's that?"])
 
-with tab2:
-    
-    st.write("Unique Names Tabls")
-    #output_table=unique_names
-
-
-
-# Prompt the user to enter a name
-input_name = st.text_input('Enter a name:', key="name_input_2")
-
-# Display the entered name
-if input_name:
-    st.write(f'Hello, {input_name}!')
-    
-    
-    
-    
-    
-    
-# Function to plot a normal distribution
-def normal_distribution_plot(mean=0, std_dev=1, sample_size=1000):
-    # Generate data for the normal distribution
-    data = np.random.normal(loc=mean, scale=std_dev, size=sample_size)
-    
-    # Create a histogram for the normal distribution with matplotlib
+    # Graph that updates based on study_hours
+    st.subheader("Study Hours Overview")
+    x = np.arange(6)  # Days of the week (Monday to Saturday)
+    y = [study_hours / 6] * 6  # Distribute study hours across six days (excluding Sunday)
     fig, ax = plt.subplots()
-    ax.hist(data, bins=30, density=True, alpha=0.6, color='skyblue', edgecolor='black')
-    
-    # Add the normal distribution curve
-    xmin, xmax = ax.get_xlim()
-    x = np.linspace(xmin, xmax, 100)
-    p = (1 / (std_dev * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x - mean) / std_dev) ** 2)
-    ax.plot(x, p, 'k', linewidth=2)
-    
-    ax.set_title(f'Normal Distribution (mean={mean}, std_dev={std_dev})')
-    ax.set_xlabel('Value')
-    ax.set_ylabel('Density')
-    
+    ax.bar(x, y, tick_label=["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"], color="#002E5D")  # Exclude Sunday
+    ax.set_ylabel("Hours Studied")
+    ax.set_title("Study Hours Per Day")
     st.pyplot(fig)
 
-# Streamlit UI for interactive mean and standard deviation input
-st.title("Normal Distribution Plotter")
-mean = st.slider("Select the mean", -10.0, 10.0, 0.0)
-std_dev = st.slider("Select the standard deviation", 0.1, 5.0, 1.0)
-sample_size = st.number_input("Sample size", min_value=100, max_value=10000, value=1000)
 
-# Display the normal distribution plot
-normal_distribution_plot(mean, std_dev, sample_size)
+    # Dynamic Text
+    st.write("🏆 Academic Insights:")
+    st.write(f"You're taking **{credit_hours} credit hours** and studying **{study_hours} hours per week**. "
+            f"This suggests you're dedicating about **{study_hours / credit_hours:.1f} hours per credit hour**—")
+
+    # Provide feedback based on study hours per credit hour
+    study_per_credit = study_hours / credit_hours if credit_hours > 0 else 0
+
+    if study_per_credit < 2:
+        st.warning("You're dedicating less than 2 hours per credit hour. Make sure your understanding the class material.")
+    elif 2 <= study_per_credit <= 3:
+        st.success("Great! You're within the recommended study range of 2-3 hours per credit hour. Keep up the good work!")
+    else:
+        st.error("You're studying more than 3 hours per credit hour. This might indicate that you're struggling to understand the material. "
+                "Consider seeking support such as attending TA sessions, teacher office hours, or group tutoring to improve your efficiency and understanding.")
+
+
+    # Table
+    st.write("📅 Suggested Weekly Breakdown:")
+    schedule = pd.DataFrame({
+        "Day": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+        "Hours to Study": [study_hours / 6] * 6
+    })
+    st.table(schedule)
+
+# Tab 2: Study Habits
+with tab2:
+    st.title("Study Habits Analysis")
+
+    # 1. Select number of study days
+    study_days = st.multiselect(
+        "Select which days you study:",
+        options=["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+        default=["Monday", "Wednesday", "Friday"]
+    )
+
+    # 2. Input specific hours for each day
+    study_hours = {}
+    for day in study_days:
+        study_hours[day] = st.number_input(f"How many hours do you study on {day}?", min_value=0.0, max_value=24.0, value=2.0, step=0.5)
+
+    # Populate hours for days not selected
+    all_days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    for day in all_days:
+        if day not in study_hours:
+            study_hours[day] = 0.0
+
+    # Update bar chart dynamically
+    st.write("Your Weekly Study Schedule:")
+    x = np.arange(7)  # Days of the week
+    y = [study_hours[day] for day in all_days]  # Hours per day
+    fig, ax = plt.subplots()
+    ax.bar(x, y, tick_label=all_days, color="#002E5D")
+    ax.set_ylabel("Hours Studied")
+    ax.set_title("Study Hours Per Day")
+    st.pyplot(fig)
+
+    # Compare to national average
+    national_average = [3.5, 3.5, 3.5, 3.5, 3.5, 3.5, 3.5]  # Example national average for each day
+
+    st.write("Comparison with National Average:")
+    fig2, ax2 = plt.subplots()
+    width = 0.35  # Width of bars
+
+    # User data bars
+    ax2.bar(x - width / 2, y, width=width, label="Your Hours", color="#002E5D")
+
+    # National average bars
+    ax2.bar(x + width / 2, national_average, width=width, label="National Average", color="#A5A7AA")
+
+    ax2.set_xticks(x)
+    ax2.set_xticklabels(all_days)
+    ax2.set_ylabel("Hours Studied")
+    ax2.set_title("Study Hours vs National Average")
+    ax2.legend()
+    st.pyplot(fig2)
+
+    # Summary Text
+    total_study_hours = sum(y)
+    national_avg_total = sum(national_average)
+    st.write(f"**Your Total Weekly Study Hours:** {total_study_hours} hours")
+    st.write(f"**National Average Weekly Study Hours:** {national_avg_total} hours")
+    if total_study_hours > national_avg_total:
+        st.success("You're studying more than the national average. Don't push yourself more than you can bear!")
+    elif total_study_hours == national_avg_total:
+        st.info("You're matching the national average. Keep it up!")
+    else:
+        st.warning("You're studying less than the national average. Consider increasing your credit load!")
+
+# Tab 3: Campus Fun
+with tab3:
+    st.title("Campus Fun and Events")
+    st.write("Here's some fun activities and events you can do at BYU!")
+
+    # Another Container or Layout Element
+    st.container()
+    with st.container():
+        st.subheader("Weekly Activity Ideas")
+        st.write("- **Monday**: FHE at the Wilkinson Center.")
+        st.write("- **Tuesday**: Devotional at the Marriott Center and on-campus club nights.")
+        st.write("- **Wednesday**: BYUSA Club Activities.")
+        st.write("- **Thursday**: Study night with friends at the library.")
+        st.write("- **Friday**: Cheer the Cougars at the game!")
+        st.write("- **Saturday**: Hike the Y, play volleyvall, or have a date night!")
+        st.write("- **Sunday**: Worship, reflect, and recharge.")
+
+# Run the app using `streamlit run app.py`
