@@ -228,7 +228,7 @@ with tab1:
     major = st.selectbox("Do you feel overwhelmed with your current schedule?", options=["Yes", "Somewhat", "No"])
     involvement = st.radio("Have you sought on campus learning assistance?", options=["Yes", "No", "What's that?"])
 
-    # Graph that updates based on study_hours
+    # Graph that shoudl update based on study_hours
     st.subheader("Study Hours Overview")
     x = np.arange(6)  # Days of the week (Monday to Saturday)
     y = [study_hours / 6] * 6  # Distribute study hours across six days (excluding Sunday)
@@ -244,7 +244,7 @@ with tab1:
     st.write(f"You're taking **{credit_hours} credit hours** and studying **{study_hours} hours per week**. "
             f"This suggests you're dedicating about **{study_hours / credit_hours:.1f} hours per credit hour**—")
 
-    # Provide feedback based on study hours per credit hour
+    # My feedback based on user's study hours per credit hour
     study_per_credit = study_hours / credit_hours if credit_hours > 0 else 0
 
     if study_per_credit < 2:
@@ -268,25 +268,25 @@ with tab1:
 with tab2:
     st.title("Study Habits Analysis")
 
-    # 1. Select number of study days
+    # 1. User selects number of study days
     study_days = st.multiselect(
         "Select which days you study:",
         options=["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
         default=["Monday", "Wednesday", "Friday"]
     )
 
-    # 2. Input specific hours for each day
+    # 2. They input specific hours for each day
     study_hours = {}
     for day in study_days:
         study_hours[day] = st.number_input(f"How many hours do you study on {day}?", min_value=0.0, max_value=24.0, value=2.0, step=0.5)
 
-    # Populate hours for days not selected
+    # User populates hours for days not selected
     all_days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
     for day in all_days:
         if day not in study_hours:
             study_hours[day] = 0.0
 
-    # Update bar chart dynamically
+    # This bar chart updates dynamically
     st.write("Your Weekly Study Schedule:")
     x = np.arange(7)  # Days of the week
     y = [study_hours[day] for day in all_days]  # Hours per day
@@ -296,7 +296,7 @@ with tab2:
     ax.set_title("Study Hours Per Day")
     st.pyplot(fig)
 
-    # Compare to national average
+    # Compare input to national average
     national_average = [3.5, 3.5, 3.5, 3.5, 3.5, 3.5, 3.5]  # Example national average for each day
 
     st.write("Comparison with National Average:")
@@ -333,7 +333,7 @@ with tab3:
     st.title("Campus Fun and Events")
     st.write("Here's some fun activities and events you can do at BYU!")
 
-    # Another Container or Layout Element
+    
     st.container()
     with st.container():
         st.subheader("Weekly Activity Ideas")
@@ -345,4 +345,3 @@ with tab3:
         st.write("- **Saturday**: Hike the Y, play volleyvall, or have a date night!")
         st.write("- **Sunday**: Worship, reflect, and recharge.")
 
-# Run the app using `streamlit run app.py`
